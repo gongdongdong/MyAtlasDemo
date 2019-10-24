@@ -1,0 +1,2 @@
+include ':app', ':firstbundle', ':secondbundle'
+rootProject.name='MyAtlas'
