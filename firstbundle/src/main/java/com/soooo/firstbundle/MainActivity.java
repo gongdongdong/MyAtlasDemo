@@ -18,6 +18,7 @@ import android.widget.Toast;
 import org.osgi.framework.BundleException;
 
 import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,45 +38,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        startremoteBundle();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.this.startremoteBundle();
+            }
+        }).start();
 
     }
 
 
     private void startremoteBundle(){
-        String remoteDir = Environment.getExternalStorageDirectory().getPath() + "/libcom_soooo_secondbundle.so";
-        File remoteBundleFile = new File(remoteDir);
-        String path = "";
-        if (!remoteBundleFile.exists()) {
-            Toast.makeText(this, " 远程bundle不存在，请确定 : " + remoteBundleFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        path = remoteBundleFile.getAbsolutePath();
-        PackageInfo info = this.getPackageManager().getPackageArchiveInfo(path, 0);
-
         try {
-            Log.i((String)null, "getBundleClassLoader start:");
-            ClassLoader classLoader = Atlas.getInstance().getBundleClassLoader(remoteDir);
-            Log.i((String)null, "getBundleClassLoader end:" + remoteDir);
-            if (null != classLoader) {
-                Log.i((String)null, "uninstall exe:" + remoteDir);
-                Atlas.getInstance().uninstallBundle(remoteDir);
-            } else {
-                Log.i((String)null, "uninstall no:" + remoteDir);
-            }
-        } catch (BundleException var9) {
-            var9.printStackTrace();
-            Log.i((String)null, "uninstall error:" + var9.getMessage() + "xxx:" + remoteDir);
-        }
-
-        try {
-            Log.i((String)null, "installBundle start:" + info.packageName);
-            Atlas.getInstance().installBundle(info.packageName, new File(path));
+            Atlas.getInstance().installBundle("com.soooo.secondbundle", getAssets().open("libcom_soooo_secondbundle.so"));
         } catch (BundleException var8) {
-            Log.i((String)null, "远程bundle 安装失败:" + var8.getMessage());
-            Toast.makeText(this, " 远程bundle 安装失败，" + var8.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.i("gddtest", "远程bundle 安装失败:" + var8.getMessage());
+            Toast.makeText(this, " 远程bundle 安装失败，" + var8.getMessage(), Toast.LENGTH_LONG).show();
             var8.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         Intent intent = new Intent();
